@@ -22,7 +22,7 @@ void write_out_console (struct universe *u) {
   printf("\n");
   for (int i = 0; i < u->rows; i++){
     for (int j = 0; j < u->cols; j++) {
-      printf("%c", u->cells[i][j]);
+      putc(u->cells[i][j], stdout);
     }
     printf("\n");
   }
