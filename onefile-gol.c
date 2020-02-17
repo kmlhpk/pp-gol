@@ -1,7 +1,10 @@
 #include<stdio.h>
-#include<conio.h> // This is only needed for putc in write_out_console - remove later
 
-#define UNIVERSE_HARDCODE {{{'.','.','*','*','*','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'}},5,9,4,8,0}
+#define UNIVERSE_HARDCODE {{{'.','.','*','*','*','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'}},5,9,4,8,6,2/15,6,1,2/15}
+
+// #define STUPID_1 {{{"."}},1,1,0,0,1}
+
+// #define STUPID_2 {{{"*","*"},{".","."}},2,2,1,1,1}
 
 struct universe {
   char cells[5][9];
@@ -9,10 +12,11 @@ struct universe {
   int cols;
   int MAX_ROW_INDEX;
   int MAX_COL_INDEX;
+  int aliveNow;
+  float aliveNowFrac;
+  int aliveSoFar;
   int generations;
-  // percentage alive now
-  // average percentage alive so far
-  //    = ((alivesofar * generations - 1) + alivenow) / generations
+  float aliveAverageFrac;
 };
 
 //void read_in_file(FILE *infile, struct universe *u);
@@ -23,7 +27,7 @@ void write_out_console (struct universe *u) {
   printf("\n");
   for (int i = 0; i < u->rows; i++){
     for (int j = 0; j < u->cols; j++) {
-      putc(u->cells[i][j], stdout);
+      fputc(u->cells[i][j], stdout);
     }
     printf("\n");
   }
@@ -32,6 +36,7 @@ void write_out_console (struct universe *u) {
 
 // Amends C's % operator to return a modulo like in Python, not a remainder
 // Behaviour undefined for b = 0
+// SLAP THIS IN A DEFINE AND DOUBLE-CHECK WITH KONRAD (possibly move this to gol.c) Qs 8 and 14 in FAQ
 int mod (int a, int b) {
   if (b < 0) {
     return -mod(-a, -b);
@@ -143,16 +148,24 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
 }
 
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
+  int aliveNew = 0;
   char newCells[u->rows][u->cols]; // MALLOC THIS LATER!
   for (int i = 0; i < u->rows; i++) {
     for (int j = 0; j < u->cols; j++) {
       if (rule(u, j, i)) {
         newCells[i][j] = '*';
+        aliveNew += 1;
       } else {
         newCells[i][j] = '.';
       }
     }
   }
+
+  u->aliveNow = aliveNew;
+  u->aliveNowFrac = u->aliveNow / (u->rows * u->cols);
+  u->aliveSoFar += u->aliveNow;
+  u->generations += 1;
+  u->aliveAverageFrac = u->aliveSoFar / (u->generations*u->rows*u->cols);
 
   // replace the following with pointer magic
   for (int i = 0; i < u->rows; i++) {
