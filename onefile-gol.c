@@ -1,8 +1,7 @@
 #include<stdio.h>
-#include<conio.h>
-#include<string.h>
+#include<conio.h> // This is only needed for putc in write_out_console - remove later
 
-#define UNIVERSE_HARDCODE {{{'.','.','.','.','.','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','*','*','*','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'}},5,9,4,8,0}
+#define UNIVERSE_HARDCODE {{{'.','.','*','*','*','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'}},5,9,4,8,0}
 
 struct universe {
   char cells[5][9];
@@ -19,6 +18,7 @@ struct universe {
 //void read_in_file(FILE *infile, struct universe *u);
 //void write_out_file(FILE *outfile, struct universe *u);
 
+// A debug function to easily print shit to the console - DELETE LATER!!!!!!!!!!!!!!!
 void write_out_console (struct universe *u) {
   printf("\n");
   for (int i = 0; i < u->rows; i++){
@@ -30,21 +30,34 @@ void write_out_console (struct universe *u) {
   printf("\n");
 };
 
+// Amends C's % operator to return a modulo like in Python, not a remainder
+// Behaviour undefined for b = 0
+int mod (int a, int b) {
+  if (b < 0) {
+    return -mod(-a, -b);
+  }
+  int result = a % b;
+  if (result < 0) {
+    result += b;
+  }
+  return result;
+}
+
 int is_alive(struct universe *u, int column, int row){
-  //printf("I receive %d as my row and %d as my column \n",row,column);
+  #define ISALIVE_DEBUG1 printf("I receive %d as my row and %d as my column \n",row,column);
   if (u->cells[row][column] == '.') {
-    //printf("%d,%d is dead \n",row,column);
+    #define ISALIVE_DEAD printf("%d,%d is dead \n",row,column);
     return(0);
   }
   else {
-    //printf("%d,%d is alive \n",row,column);
+    #define ISALIVE_ALIVE printf("%d,%d is alive \n",row,column);
     return(1);
   }
 };
 
 int will_be_alive(struct universe *u, int column, int row){
 
-  //printf("investigating %d,%d's neighbours \n",row,column);
+  #define WILLBEALIVE_DEBUG1 printf("investigating %d,%d's neighbours \n",row,column);
 
   int north, northeast, east, southeast, south, southwest, west, northwest = 0;
 
@@ -82,26 +95,52 @@ int will_be_alive(struct universe *u, int column, int row){
     northwest = is_alive(u,column-1,row-1);}
 
   int neighbours = northwest+north+northeast+west+southwest+south+southeast+east;
-  //printf("I have %d alive neighbours \n",neighbours);
+  
+  #define WILLBEALIVE_DEBUG2 printf("I have %d alive neighbours \n",neighbours);
 
   if (neighbours == 3) {
-    //printf("so I live \n");
+    #define SOILIVE printf("so I live \n");
     return(1);
   } else if (neighbours == 2) {
     if (is_alive(u,column,row)) {
-      //printf("and I'm alive, so I live \n");
+      #define ALIVE_LIVE printf("and I'm alive, so I live \n");
       return(1);
     } else {
-      //printf("and I'm dead, so I die \n");
+      #define DEAD_DIE printf("and I'm dead, so I die \n");
       return(0);
     }
   } else {
-    //printf("so I die \n");
+    #define SOIDIE printf("so I die \n");
     return(0);
   }
 };
 
-//int will_be_alive_torus(struct universe *u,  int column, int row);
+int will_be_alive_torus(struct universe *u,  int column, int row){
+  int north, northeast, east, southeast, south, southwest, west, northwest = 0;
+
+  north = is_alive(u,mod(column,u->cols),mod(row-1,u->rows));
+  northeast = is_alive(u,mod(column+1,u->cols),mod(row-1,u->rows));
+  east = is_alive(u,mod(column+1,u->cols),mod(row,u->rows));
+  southeast = is_alive(u,mod(column+1,u->cols),mod(row+1,u->rows));
+  south = is_alive(u,mod(column,u->cols),mod(row+1,u->rows));
+  southwest = is_alive(u,mod(column-1,u->cols),mod(row+1,u->rows));
+  west = is_alive(u,mod(column-1,u->cols),mod(row,u->rows));
+  northwest = is_alive(u,mod(column-1,u->cols),mod(row-1,u->rows));
+
+  int neighbours = northwest+north+northeast+west+southwest+south+southeast+east;
+
+  if (neighbours == 3) {
+    return(1);
+  } else if (neighbours == 2) {
+    if (is_alive(u,column,row)) {
+      return(1);
+    } else {
+      return(0);
+    }
+  } else {
+    return(0);
+  }
+}
 
 void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
   char newCells[u->rows][u->cols]; // MALLOC THIS LATER!
@@ -132,19 +171,11 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
 int main(){
   struct universe v = UNIVERSE_HARDCODE;
   write_out_console(&v);
-  evolve(&v,will_be_alive);
+  evolve(&v,will_be_alive_torus);
   write_out_console(&v);
-  evolve(&v,will_be_alive);
+  evolve(&v,will_be_alive_torus);
   write_out_console(&v);
-  evolve(&v,will_be_alive);
-  write_out_console(&v);
-  evolve(&v,will_be_alive);
-  write_out_console(&v);
-  evolve(&v,will_be_alive);
-  write_out_console(&v);
-  evolve(&v,will_be_alive);
-  write_out_console(&v);
-  evolve(&v,will_be_alive);
+  evolve(&v,will_be_alive_torus);
   write_out_console(&v);
 return 0;
 }
