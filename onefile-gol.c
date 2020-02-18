@@ -1,6 +1,6 @@
 #include<stdio.h>
 
-#define UNIVERSE_HARDCODE {{{'.','.','*','*','*','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'},{'.','.','.','.','.','.','.','.','*'}},5,9,4,8,6,2/15,6,1,2/15}
+#define UNIVERSE_HARDCODE {{{'.','.','.','.','.','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','*','*','*','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'}},5,9,4,8,3,1.0/15.0,3,1,1.0/15.0}
 
 // #define STUPID_1 {{{"."}},1,1,0,0,1}
 
@@ -37,7 +37,7 @@ void write_out_console (struct universe *u) {
 // Amends C's % operator to return a modulo like in Python, not a remainder
 // Behaviour undefined for b = 0
 // SLAP THIS IN A DEFINE AND DOUBLE-CHECK WITH KONRAD (possibly move this to gol.c) Qs 8 and 14 in FAQ
-int mod (int a, int b) {
+int mod (int a, int b){
   if (b < 0) {
     return -mod(-a, -b);
   }
@@ -61,7 +61,6 @@ int is_alive(struct universe *u, int column, int row){
 };
 
 int will_be_alive(struct universe *u, int column, int row){
-
   #define WILLBEALIVE_DEBUG1 printf("investigating %d,%d's neighbours \n",row,column);
 
   int north, northeast, east, southeast, south, southwest, west, northwest = 0;
@@ -161,11 +160,14 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
     }
   }
 
+  printf("%d alive in this generation\n",u->aliveNow);
+  printf("%d alive so far\n",u->aliveSoFar);
+
   u->aliveNow = aliveNew;
-  u->aliveNowFrac = u->aliveNow / (u->rows * u->cols);
+  u->aliveNowFrac = (float)u->aliveNow / (float)(u->rows * u->cols);
   u->aliveSoFar += u->aliveNow;
   u->generations += 1;
-  u->aliveAverageFrac = u->aliveSoFar / (u->generations*u->rows*u->cols);
+  u->aliveAverageFrac = (float)u->aliveSoFar / (float)(u->generations*u->rows*u->cols);
 
   // replace the following with pointer magic
   for (int i = 0; i < u->rows; i++) {
@@ -173,23 +175,26 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
       u->cells[i][j] = newCells[i][j];
     }
   }
-
 };
 
-
-
-//void print_statistics(struct universe *u){};
-
+void print_statistics(struct universe *u){
+  printf("%.3f%% of cells currently alive\n",u->aliveNowFrac*(float)100);
+  printf("%.3f%% of cells alive on average\n",u->aliveAverageFrac*(float)100);
+};
 
 int main(){
   struct universe v = UNIVERSE_HARDCODE;
   write_out_console(&v);
+  print_statistics(&v);
   evolve(&v,will_be_alive_torus);
   write_out_console(&v);
+  print_statistics(&v);
   evolve(&v,will_be_alive_torus);
   write_out_console(&v);
+  print_statistics(&v);
   evolve(&v,will_be_alive_torus);
   write_out_console(&v);
+  print_statistics(&v);
 return 0;
 }
 
