@@ -19,19 +19,18 @@ struct universe {
   float aliveAverageFrac;
 };
 
-//void read_in_file(FILE *infile, struct universe *u);
-//void write_out_file(FILE *outfile, struct universe *u);
+void read_in_file(FILE *infile, struct universe *u) {
+  
 
-// A debug function to easily print shit to the console - DELETE LATER!!!!!!!!!!!!!!!
-void write_out_console (struct universe *u) {
-  printf("\n");
+};
+
+void write_out_file(FILE *outfile, struct universe *u) {
   for (int i = 0; i < u->rows; i++){
     for (int j = 0; j < u->cols; j++) {
-      fputc(u->cells[i][j], stdout);
+      fputc(u->cells[i][j], outfile);
     }
     printf("\n");
   }
-  printf("\n");
 };
 
 // Amends C's % operator to return a modulo like in Python, not a remainder
@@ -184,16 +183,16 @@ void print_statistics(struct universe *u){
 
 int main(){
   struct universe v = UNIVERSE_HARDCODE;
-  write_out_console(&v);
+  write_out_file(stdout,&v);
   print_statistics(&v);
   evolve(&v,will_be_alive_torus);
-  write_out_console(&v);
+  write_out_file(stdout,&v);
   print_statistics(&v);
   evolve(&v,will_be_alive_torus);
-  write_out_console(&v);
+  write_out_file(stdout,&v);
   print_statistics(&v);
   evolve(&v,will_be_alive_torus);
-  write_out_console(&v);
+  write_out_file(stdout,&v);
   print_statistics(&v);
 return 0;
 }
