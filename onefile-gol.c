@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 
 #define UNIVERSE_HARDCODE {{{'.','.','.','.','.','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','*','*','*','.','.','.','.'},{'.','.','.','*','.','.','.','.','.'},{'.','.','.','.','.','.','.','.','.'}},5,9,4,8,3,1.0/15.0,3,1,1.0/15.0}
 
@@ -10,8 +11,8 @@ struct universe {
   char cells[5][9];
   int rows;
   int cols;
-  int MAX_ROW_INDEX;
-  int MAX_COL_INDEX;
+  int maxRowIndex;
+  int maxColIndex;
   int aliveNow;
   float aliveNowFrac;
   int aliveSoFar;
@@ -20,8 +21,24 @@ struct universe {
 };
 
 void read_in_file(FILE *infile, struct universe *u) {
+
   
 
+  if (infile == NULL){
+    fprintf(stderr, "Empty file \n");
+    exit(1);
+  }
+  int columns = 0;
+  while (fgetc(infile) != EOF) {
+    columns += 1;
+  }
+
+
+  printf("\n%d columns \n",columns);
+  if (columns == 0 || columns >= 512) {
+    fprintf(stderr, "Invalid column number \n");
+    exit(1);
+  }
 };
 
 void write_out_file(FILE *outfile, struct universe *u) {
@@ -68,23 +85,23 @@ int will_be_alive(struct universe *u, int column, int row){
    north = 0;
   } else {
     north = is_alive(u,column,row-1);}
-  if (row == 0 || column == u->MAX_COL_INDEX) {
+  if (row == 0 || column == u->maxColIndex) {
     northeast = 0;
   } else {
     northeast = is_alive(u,column+1,row-1);}
-  if (column == u->MAX_COL_INDEX) {
+  if (column == u->maxColIndex) {
     east = 0;
   } else {
     east = is_alive(u,column+1,row);}
-  if (row == u->MAX_ROW_INDEX || column == u->MAX_COL_INDEX) {
+  if (row == u->maxRowIndex || column == u->maxColIndex) {
     southeast = 0;
   } else {
     southeast = is_alive(u,column+1,row+1);}
-  if (row == u->MAX_ROW_INDEX) {
+  if (row == u->maxRowIndex) {
     south = 0;
   } else {
     south = is_alive(u,column,row+1);}
-  if (row == u->MAX_ROW_INDEX || column == 0) {
+  if (row == u->maxRowIndex || column == 0) {
     southwest = 0;
   } else {
     southwest = is_alive(u,column-1,row+1);}
@@ -180,7 +197,7 @@ void print_statistics(struct universe *u){
   printf("%.3f%% of cells currently alive\n",u->aliveNowFrac*(float)100);
   printf("%.3f%% of cells alive on average\n",u->aliveAverageFrac*(float)100);
 };
-
+/*
 int main(){
   struct universe v = UNIVERSE_HARDCODE;
   write_out_file(stdout,&v);
@@ -196,7 +213,12 @@ int main(){
   print_statistics(&v);
 return 0;
 }
+*/
 
+int main(){
+  struct universe v = UNIVERSE_HARDCODE;
+  read_in_file(stdin, &v);
+}
 
 /* Vanilla
 int main(int argc, char *argv[]){
