@@ -21,21 +21,61 @@ struct universe {
 };
 
 void read_in_file(FILE *infile, struct universe *u) {
-
-  
-
   if (infile == NULL){
-    fprintf(stderr, "Empty file \n");
+    fprintf(stderr, "Empty file\n");
     exit(1);
   }
+  char buffer[513];
+  char grid[513];
   int columns = 0;
-  while (fgetc(infile) != EOF) {
-    columns += 1;
+  int rows = 1;
+  char c;
+  int currentColumns;
+  while (1) {
+    c = fgetc(infile);
+    if (columns == 0) {
+      if (c == EOF) {break;} else {
+        while (c != '\n') {
+          if (c == '.' || c == '*') {
+            buffer[columns] = c;
+            columns += 1;
+          } else {
+            fprintf(stderr, "Ill-formatted input - expected only . or *, saw a different character.\n");
+            exit(1);
+          }
+          c = fgetc(infile);
+        }
+      }
+    } else {
+      if (c == EOF) {break;} else {
+        while (c != '\n') {
+          if (c == '.' || c == '*') {
+            buffer[currentColumns] = c;
+            currentColumns += 1;
+          } else {
+            fprintf(stderr, "Ill-formatted input - expected only . or * (and line-feed), saw a different character.\n");
+            exit(1);
+          }
+          c = fgetc(infile);
+        }
+      }
+    }
+    if (rows > 1) {
+      if (currentColumns != columns) {
+        fprintf(stderr, "Ill-formatted input - column numbers aren't equal in every row\n");
+        exit(1);
+      }
+    }
+    currentColumns = 0;
+    rows += 1;
   }
 
+  // If we can definitely expect all valid inputs, whether from a file or from stdio, to have a trailing LF (\n) before EOF, then this rows -= 1 makes sense. Otherwise, it fucks us over a bit.
+  rows -= 1;
 
-  printf("\n%d columns \n",columns);
-  if (columns == 0 || columns >= 512) {
+  printf("%d columns! \n",columns);
+  printf("%d rows! \n",rows);
+  if (columns == 0 || columns > 512) {
     fprintf(stderr, "Invalid column number \n");
     exit(1);
   }
