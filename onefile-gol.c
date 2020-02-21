@@ -112,7 +112,7 @@ void read_in_file(FILE *infile, struct universe *u){
   u->aliveNowFrac = (float)alive / (float)(rows*columns);
   u->aliveAverageFrac = (float)alive / (float)(rows*columns);
   u->generations = 1;
-};
+}
 
 void write_out_file(FILE *outfile, struct universe *u) {
   // Writes out every character in the universe's cell board
@@ -122,7 +122,7 @@ void write_out_file(FILE *outfile, struct universe *u) {
     }
     printf("\n");
   }
-};
+}
 
 // Amends C's % operator to return a modulo like in Python, not a remainder
 // Behaviour undefined for b = 0
@@ -148,7 +148,7 @@ int is_alive(struct universe *u, int column, int row){
     fprintf(stderr, "Encountered illegal character in cell grid");
     exit(1);
   }
-};
+}
 
 int will_be_alive(struct universe *u, int column, int row){
   // Initialises all neighbours as dead
@@ -202,7 +202,7 @@ int will_be_alive(struct universe *u, int column, int row){
   } else {
     return(0);
   }
-};
+}
 
 int will_be_alive_torus(struct universe *u,  int column, int row){
   // Initialises all neighbours as dead
@@ -264,13 +264,13 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
       u->cells[i][j] = newCells[i][j];
     }
   }
-};
+}
 
 void print_statistics(struct universe *u){
   // Prints statistics about the universe (funnily enough)
   printf("%.3f%% of cells currently alive\n",u->aliveNowFrac*(float)100);
   printf("%.3f%% of cells alive on average\n",u->aliveAverageFrac*(float)100);
-};
+}
 
 /*
 int main(){
