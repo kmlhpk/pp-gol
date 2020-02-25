@@ -2,68 +2,176 @@
 #include <stdlib.h>
 #include "gol.h"
 
-int main(int argc, char *argv[]){ //argv is char but input_filename can be a str???
-  
+int main(int argc, char *argv[]) {
   int torus = 0;
   int gens = 5;
   int stats = 0;
+  char *inputFile = NULL;
+  char *outputFile = NULL;
 
-  for (int i=0;i<argc;i++) {
-    switch (argv[i]){
-      case "-i":
-        if (i == argc-1) { //check also when it's not the last flag
-          fprintf(stderr, "Input file flag used, but no ??? specified\n");
+  int iFlagSeen = 0;
+  int oFlagSeen = 0;
+  int gFlagSeen = 0;
+  int sFlagSeen = 0;
+  int tFlagSeen = 0;
+
+  // Iterates through all arguments supplied
+  for (int i=1;i<argc;i++) {
+    // Checks if flag starts with '-' (non-flag parameters to input, output and generations are skipped with i++)
+    if (argv[i][0] != '-') {
+      fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
+      exit(1);
+    }
+    switch (argv[i][1]) {
+      case 'i':
+        if (argv[i][2] != '\0') {
+          fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
           exit(1);
         }
+        if (!iFlagSeen) {
+          iFlagSeen = 1;
+        } else {
+          fprintf(stderr, "Input file flag used more than once\n");
+          exit(1);
+        }
+        // Checks if flag is last in the list, or if flag's parameter is formatted like a flag
+        if (i == argc-1 || argv[i+1][0] == '-') {
+          fprintf(stderr, "Input file flag used, but no filename specified\n");
+          exit(1);
+        }
+
+        inputFile = argv[i+1];
+        i++;
         break;
       
-      case "-o":
-        if (i == argc-1) {
-          fprintf(stderr, "Output file flag used, but no ??? specified\n");
+      case 'o':
+        if (argv[i][2] != '\0') {
+          fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
           exit(1);
         }
+        if (!oFlagSeen) {
+          oFlagSeen = 1;
+        } else {
+          fprintf(stderr, "Output file flag used more than once\n");
+          exit(1);
+        }
+        // Checks if flag is last in the list, or if flag's parameter is formatted like a flag
+        if (i == argc-1 || argv[i+1][0] == '-') {
+          fprintf(stderr, "Output file flag used, but no filename specified\n");
+          exit(1);
+        }
+        
+        outputFile = argv[i+1];
+        i++;
         break;
 
-      case "-g":
-        if (i == argc-1) {
+      case 'g':
+        if (argv[i][2] != '\0') {
+          fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
+          exit(1);
+        }
+        if (!gFlagSeen) {
+          gFlagSeen = 1;
+        } else {
+          fprintf(stderr, "Generations file flag used more than once\n");
+          exit(1);
+        }
+        // Checks if flag is last in the list, or if flag's parameter is formatted like a flag
+        if (i == argc-1 || argv[i+1][0] == '-') {
           fprintf(stderr, "Generations flag used, but no number specified\n");
           exit(1);
         }
-        if (argv[i+1]) {
-          fprintf(stderr, "Generations flag used, but no number specified\n");
+
+        // 0 generations is a valid input
+        if (argv[i+1][0] == '0' && argv[i+1][1] == '\0') {
+          gens = 0;
+        } else if (atoi(argv[i+1]) == 0) {
+          // If string to int conversion fails, throws error
+          fprintf(stderr, "Invalid number of generations - not recognised as a number\n");
           exit(1);
+        } else {
+          gens = atoi(argv[i+1]);
+          if (gens<0) {
+            fprintf(stderr, "Invalid number of generations - please enter a number at least 0\n");
+            exit(1);
+          }
         }
+        i++;
         break;
 
-      case "-s":
+      case 's':
+        if (argv[i][2] != '\0') {
+          fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
+          exit(1);
+        }
+        if (!sFlagSeen) {
+          sFlagSeen = 1;
+        } else {
+          fprintf(stderr, "Stats flag used more than once\n");
+          exit(1);
+        }
         stats = 1;
         break;
 
-      case "-t":
+      case 't':
+        if (argv[i][2] != '\0') {
+          fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
+          exit(1);
+        }
+        if (!tFlagSeen) {
+          tFlagSeen = 1;
+        } else {
+          fprintf(stderr, "Torus topology file flag used more than once\n");
+          exit(1);
+        }
         torus = 1;
         break;
       
       default:
+        fprintf(stderr, "Unrecognised argument %s: valid arguments are -i, -o, -g, -s, -t\n", argv[i]);
+        exit(1);
         break;
     }
   }
 
   struct universe v;
-  read_in_file(stdin,&v);
+  if (inputFile != NULL) {
+    FILE *fp;
+    fp = fopen(inputFile,"r");
+    if (fp == NULL) {
+      fprintf(stderr, "Null input file pointer - program cannot open\n");
+      exit(1);
+    }
+    read_in_file(fp,&v);
+    fclose(fp);
+  } else {
+    read_in_file(stdin,&v);
+  }
 
   if (gens != 0) {
     if (torus) {
-      for (int i=0;i<gens;i++){
+      for (int i=0;i<gens;i++) {
         evolve(&v,will_be_alive_torus);
       } 
     } else {
-      for (int i=0;i<gens;i++){
+      for (int i=0;i<gens;i++) {
         evolve(&v,will_be_alive);
       }
     }
   }
 
-  write_out_file(stdout,&v);
+  if (outputFile != NULL) {
+    FILE *fp;
+    fp = fopen(outputFile,"w");
+    if (fp == NULL) {
+      fprintf(stderr, "Null output file pointer\n");
+      exit(1);
+    }
+    write_out_file(fp,&v);
+    fclose(fp);
+  } else {
+    write_out_file(stdout,&v);
+  }
 
   if (stats) {
     print_statistics(&v);

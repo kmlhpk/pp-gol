@@ -1,11 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "gol.h"
 
 // Amends C's % operator to return a modulo like in Python, not a remainder
 // Behaviour undefined for b = 0
 //  Qs 8 and 14 in FAQ
-int mod (int a, int b){
+int mod (int a, int b) {
   if (b < 0) {
     return -mod(-a, -b);
   }
@@ -16,10 +14,19 @@ int mod (int a, int b){
   return result;
 }
 
-void read_in_file(FILE *infile, struct universe *u){
+void universeCheck (struct universe *u) {
+  // Performs simple check if the universe pointer exists
+  if (!u) {
+    fprintf(stderr, "Null universe\n");
+    exit(1);
+  }
+}
+
+void read_in_file(FILE *infile, struct universe *u) {
+  universeCheck(u);
   // Checks if the file is empty
   if (infile == NULL){
-    fprintf(stderr, "Empty file\n");
+    fprintf(stderr, "Null input file pointer\n");
     exit(1);
   }
   int columns = 0;
@@ -86,8 +93,16 @@ void read_in_file(FILE *infile, struct universe *u){
     rows += 1;
     // Adds one more line's worth of space in the 2D array
     grid = (char **)realloc(grid, (rows+1) * sizeof(char *));
+    if (grid == NULL){
+      fprintf(stderr, "Failed to allocate memory\n");
+      exit(1);
+    }
     // Makes the line buffer point at some fresh blank memory
     line = (char *)malloc(513 * sizeof(char));
+    if (line == NULL){
+      fprintf(stderr, "Failed to allocate memory\n");
+      exit(1);
+    }
   }
 
   if (columns == 0 || columns > 512) {
@@ -117,16 +132,26 @@ void read_in_file(FILE *infile, struct universe *u){
 }
 
 void write_out_file(FILE *outfile, struct universe *u) {
+  universeCheck(u);
+  if (outfile == NULL) {
+    fprintf(stderr, "Null output file pointer\n");
+    exit(1);
+  }
   // Writes out every character in the universe's cell board
-  for (int i = 0; i < u->rows; i++){
+  for (int i = 0; i < u->rows; i++) {
     for (int j = 0; j < u->cols; j++) {
       fputc(u->cells[i][j], outfile);
     }
-    printf("\n");
+    fputc('\n', outfile);
   }
 }
 
-int is_alive(struct universe *u, int column, int row){
+int is_alive(struct universe *u, int column, int row) {
+  universeCheck(u);
+  if (row >= u->rows || row <= -1 || column >= u->cols || column <= -1) {
+    fprintf(stderr, "Cell to be inspected is outside the universe");
+    exit(1);
+  }
   // Returns 0 if cell is dead, 1 if cell is alive, error if cell is somehow an illegal character
   if (u->cells[row][column] == '.') {
     return(0);
@@ -138,7 +163,13 @@ int is_alive(struct universe *u, int column, int row){
   }
 }
 
-int will_be_alive(struct universe *u, int column, int row){
+int will_be_alive(struct universe *u, int column, int row) {
+  universeCheck(u);
+  // Cells outside the universe are dead and will always be dead
+  if (row >= u->rows || row <= -1 || column >= u->cols || column <= -1) {
+    return(0);
+  }
+
   // Initialises all neighbours as dead
   int north, northeast, east, southeast, south, southwest, west, northwest = 0;
 
@@ -192,7 +223,8 @@ int will_be_alive(struct universe *u, int column, int row){
   }
 }
 
-int will_be_alive_torus(struct universe *u,  int column, int row){
+int will_be_alive_torus(struct universe *u,  int column, int row) {
+  universeCheck(u);
   // Initialises all neighbours as dead
   int north, northeast, east, southeast, south, southwest, west, northwest = 0;
 
@@ -222,7 +254,8 @@ int will_be_alive_torus(struct universe *u,  int column, int row){
   }
 }
 
-void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)){
+void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int row)) {
+  universeCheck(u);
   int aliveNew = 0;
   // Makes new generation's cell grid
   char newCells[u->rows][u->cols];
@@ -246,7 +279,6 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
   u->aliveAverageFrac = (float)u->aliveSoFar / (float)(u->generations*u->rows*u->cols);
 
   // Replaces the current universe's cell grid with the new cell grid
-  // replace the following with pointer magic????????????????????
   for (int i = 0; i < u->rows; i++) {
     for (int j = 0; j < u->cols; j++) {
       u->cells[i][j] = newCells[i][j];
@@ -254,7 +286,8 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
   }
 }
 
-void print_statistics(struct universe *u){
+void print_statistics(struct universe *u) {
+  universeCheck(u);
   // Prints statistics about the universe (funnily enough)
   printf("%.3f%% of cells currently alive\n",u->aliveNowFrac*(float)100);
   printf("%.3f%% of cells alive on average\n",u->aliveAverageFrac*(float)100);
