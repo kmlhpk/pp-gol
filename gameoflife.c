@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
           exit(1);
         }
         // Checks if flag is last in the list, or if flag's parameter is formatted like a flag
-        if (i == argc-1 || argv[i+1][0] == '-') {
+        if (i == argc-1) {
           fprintf(stderr, "ERROR: Input file flag used, but no filename specified\n");
           exit(1);
         }
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
           exit(1);
         }
         // Checks if flag is last in the list, or if flag's parameter is formatted like a flag
-        if (i == argc-1 || argv[i+1][0] == '-') {
+        if (i == argc-1) {
           fprintf(stderr, "ERROR: Output file flag used, but no filename specified\n");
           exit(1);
         }
