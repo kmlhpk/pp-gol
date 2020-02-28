@@ -17,7 +17,7 @@ int mod (int a, int b) {
 void universeCheck (struct universe *u) {
   // Performs simple check if the universe pointer exists
   if (!u) {
-    fprintf(stderr, "Null universe\n");
+    fprintf(stderr, "ERROR: Null universe\n");
     exit(1);
   }
 }
@@ -26,7 +26,7 @@ void read_in_file(FILE *infile, struct universe *u) {
   universeCheck(u);
   // Checks if the file is empty
   if (infile == NULL){
-    fprintf(stderr, "Null input file pointer\n");
+    fprintf(stderr, "ERROR: Null input file pointer\n");
     exit(1);
   }
   int columns = 0;
@@ -34,13 +34,13 @@ void read_in_file(FILE *infile, struct universe *u) {
   // Allocates slightly more than maximum column amount's worth of memory to a line "buffer"
   char *line = (char*)malloc(513 * sizeof(char));
   if (line == NULL){
-    fprintf(stderr, "Failed to allocate memory\n");
+    fprintf(stderr, "ERROR: Failed to allocate memory\n");
     exit(1);
   }
   // Allocates one character pointer's worth of memory to the pointer-based "2D array"
   char **grid = (char **)malloc(sizeof(char *));
   if (grid == NULL){
-    fprintf(stderr, "Failed to allocate memory\n");
+    fprintf(stderr, "ERROR: Failed to allocate memory\n");
     exit(1);
   }
   char c;
@@ -58,7 +58,7 @@ void read_in_file(FILE *infile, struct universe *u) {
             line[columns] = c;
             columns += 1;
           } else {
-            fprintf(stderr, "Ill-formatted input - expected only . or *, saw a different character.\n");
+            fprintf(stderr, "ERROR: Ill-formatted input - expected only . or *, saw a different character.\n");
             exit(1);
           }
           c = fgetc(infile);
@@ -73,7 +73,7 @@ void read_in_file(FILE *infile, struct universe *u) {
             line[currentColumns] = c;
             currentColumns += 1;
           } else {
-            fprintf(stderr, "Ill-formatted input - expected only . or * (and line-feed), saw a different character.\n");
+            fprintf(stderr, "ERROR: Ill-formatted input - expected only . or * (and line-feed), saw a different character.\n");
             exit(1);
           }
           c = fgetc(infile);
@@ -83,7 +83,7 @@ void read_in_file(FILE *infile, struct universe *u) {
     // After each line starting with the second, checks if column numbers are equal
     if (rows > 0) {
       if (currentColumns != columns) {
-        fprintf(stderr, "Ill-formatted input - column numbers aren't equal in every row\n");
+        fprintf(stderr, "ERROR: Ill-formatted input - column numbers aren't equal in every row\n");
         exit(1);
       }
     }
@@ -94,19 +94,19 @@ void read_in_file(FILE *infile, struct universe *u) {
     // Adds one more line's worth of space in the 2D array
     grid = (char **)realloc(grid, (rows+1) * sizeof(char *));
     if (grid == NULL){
-      fprintf(stderr, "Failed to allocate memory\n");
+      fprintf(stderr, "ERROR: Failed to allocate memory\n");
       exit(1);
     }
     // Makes the line buffer point at some fresh blank memory
     line = (char *)malloc(513 * sizeof(char));
     if (line == NULL){
-      fprintf(stderr, "Failed to allocate memory\n");
+      fprintf(stderr, "ERROR: Failed to allocate memory\n");
       exit(1);
     }
   }
 
-  if (columns == 0 || columns > 512) {
-    fprintf(stderr, "Invalid column number \n");
+  if (columns <= 0 || columns > 512) {
+    fprintf(stderr, "ERROR: Invalid column number (cannot be <1 or >512)\n");
     exit(1);
   }
 
@@ -134,7 +134,7 @@ void read_in_file(FILE *infile, struct universe *u) {
 void write_out_file(FILE *outfile, struct universe *u) {
   universeCheck(u);
   if (outfile == NULL) {
-    fprintf(stderr, "Null output file pointer\n");
+    fprintf(stderr, "ERROR: Null output file pointer\n");
     exit(1);
   }
   // Writes out every character in the universe's cell board
@@ -149,7 +149,7 @@ void write_out_file(FILE *outfile, struct universe *u) {
 int is_alive(struct universe *u, int column, int row) {
   universeCheck(u);
   if (row >= u->rows || row <= -1 || column >= u->cols || column <= -1) {
-    fprintf(stderr, "Cell to be inspected is outside the universe");
+    fprintf(stderr, "ERROR: Cell to be inspected is outside the universe");
     exit(1);
   }
   // Returns 0 if cell is dead, 1 if cell is alive, error if cell is somehow an illegal character
@@ -158,7 +158,7 @@ int is_alive(struct universe *u, int column, int row) {
   } else if (u->cells[row][column] == '*') {
     return(1);
   } else {
-    fprintf(stderr, "Encountered illegal character in cell grid");
+    fprintf(stderr, "ERROR: Encountered illegal character in cell grid");
     exit(1);
   }
 }
@@ -288,7 +288,7 @@ void evolve(struct universe *u, int (*rule)(struct universe *u, int column, int 
 
 void print_statistics(struct universe *u) {
   universeCheck(u);
-  // Prints statistics about the universe (funnily enough)
+  // Prints statistics about the universe, funnily enough!
   printf("%.3f%% of cells currently alive\n",u->aliveNowFrac*(float)100);
   printf("%.3f%% of cells alive on average\n",u->aliveAverageFrac*(float)100);
 }
