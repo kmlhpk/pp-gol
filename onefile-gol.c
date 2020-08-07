@@ -126,7 +126,6 @@ void write_out_file(FILE *outfile, struct universe *u) {
 
 // Amends C's % operator to return a modulo like in Python, not a remainder
 // Behaviour undefined for b = 0
-// SLAP THIS IN A DEFINE AND DOUBLE-CHECK WITH KONRAD (possibly move this to gol.c) Qs 8 and 14 in FAQ
 int mod (int a, int b){
   if (b < 0) {
     return -mod(-a, -b);
